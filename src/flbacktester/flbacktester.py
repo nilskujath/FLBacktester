@@ -84,6 +84,7 @@ class FLBacktesterBase(abc.ABC):
             ]
         )
 
+    # 1. Setup methods
     def set_initial_equity(self, cash: float):
         self.EQUITY = cash
         logger.info(f"Initial equity set to {cash}")
@@ -146,10 +147,29 @@ class FLBacktesterBase(abc.ABC):
             self.df = pd.DataFrame()
             raise
 
+    # 2. Core backtesting methods
+    def backtest(self):
+        self.indicators()
+        logger.info(
+            f"Backtester DataFrame with added Indicators:\n{self.df.head().to_string(index=False)}\n"
+            f"...\n{self.df.tail().to_string(index=False)}"
+        )
+        for _, row in self.df.iterrows():
+            self._process_orders(row)
+            self.strategy(row)
+            logger.debug(f"Processed Bar Event: {row['ts_event']}")
+
     @abc.abstractmethod
     def indicators(self):
+        """Calculate technical indicators for the strategy."""
         pass
 
+    @abc.abstractmethod
+    def strategy(self, row):
+        """Implement trading logic for each bar."""
+        pass
+
+    # 3. Order management methods
     def submit_order(self, order: OrderBase) -> None:
         if isinstance(order, MarketOrder):
             self.pending_market_orders[order.order_id] = order
@@ -221,21 +241,7 @@ class FLBacktesterBase(abc.ABC):
                 logger.info(f"Filled stop order: {trade}")
                 del self.pending_stop_orders[order_id]
 
-    @abc.abstractmethod
-    def strategy(self, row):
-        pass
-
-    def backtest(self):
-        self.indicators()
-        logger.info(
-            f"Backtester DataFrame with added Indicators:\n{self.df.head().to_string(index=False)}\n"
-            f"...\n{self.df.tail().to_string(index=False)}"
-        )
-        for _, row in self.df.iterrows():
-            self._process_orders(row)
-            self.strategy(row)
-            logger.debug(f"Processed Bar Event: {row['ts_event']}")
-
+    # 4. Trade management methods
     def _add_trade(self, trade: Trade) -> None:
         trade_data = {
             "trade_id": trade.trade_id,
@@ -265,6 +271,13 @@ class FLBacktesterBase(abc.ABC):
             [self.executed_trades, new_trades], ignore_index=True
         )
         self._trade_buffer.clear()
+
+    # 5. Analysis methods
+    def show_performance_metrics(self) -> None:
+        self._flush_trade_buffer()
+        num_trades = len(self.executed_trades)
+        logger.info(f"Performance Metrics:")
+        logger.info(f"Total number of trades: {num_trades}")
 
 
 if __name__ == "__main__":
