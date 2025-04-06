@@ -14,4 +14,10 @@ In practice, however, such adaptation usually proves elusive: meaningful customi
 This realisation often leads users to consider building their own systems, a path that is often just as prohibitive - requiring not only significant programming effort, but also a level of software design expertise that many traders will find daunting to acquire.
 
 
+---
 
+This article offers a middle path. It introduces a lightweight, Pandas-based backtesting framework that sidesteps the structural complexity of full-scale event-driven systems while preserving the flexibility needed to model realistic execution mechanics, including complex order types and nuanced position management. The goal is to bridge the gap between overly simplistic tools and prohibitively complex infrastructures by providing a transparent, easily understandable foundation that empowers users to build and prototype their own backtesting workflows. In doing so, the framework not only facilitates rapid strategy development but also serves as a stepping stone—preparing users to design more advanced systems as their requirements evolve. It aims to lower the barrier to robust backtesting for technically inclined traders without formal software training, while remaining accessible to those who intuitively think in terms of tabular data and visual chart patterns.
+
+---
+
+* the idea is to have a flexible framework such that we do not need to copy and paste or change the code etc and have stuff in parallel, so we subclass the functionality

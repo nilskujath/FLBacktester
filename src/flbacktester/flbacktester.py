@@ -140,7 +140,7 @@ class FLBacktesterBase(abc.ABC):
                 f"...\n{self.df.tail().to_string(index=False)}"
             )
 
-            self.df['position'] = 0
+            self.df["position"] = 0
 
         except Exception as e:
             logger.error(f"Error loading CSV file: {str(e)}")
@@ -252,13 +252,16 @@ class FLBacktesterBase(abc.ABC):
             "fill_price": trade.fill_price,
         }
         self._trade_buffer.append(trade_data)
-        
+
         position_change = (
-            trade.quantity if trade.trade_direction == TradeDirection.BUY 
+            trade.quantity
+            if trade.trade_direction == TradeDirection.BUY
             else -trade.quantity
         )
-        self.df.loc[self.df['ts_event'] >= trade.ts_event, 'position'] += position_change
-        
+        self.df.loc[
+            self.df["ts_event"] >= trade.ts_event, "position"
+        ] += position_change
+
         if len(self._trade_buffer) >= self._trade_buffer.maxlen:
             self._flush_trade_buffer()
 
@@ -281,13 +284,14 @@ class FLBacktesterBase(abc.ABC):
 
 
 if __name__ == "__main__":
+
     class ExampleFLBacktester(FLBacktesterBase):
         def indicators(self):
             self.df["SMA20_close"] = self.df["close"].rolling(window=20).mean()
             self.df["SMA100_close"] = self.df["close"].rolling(window=100).mean()
 
         def strategy(self, row):
-            if row['position'] == 0:
+            if row["position"] == 0:
                 if row["SMA20_close"] > row["SMA100_close"]:
                     self.submit_order(
                         MarketOrder(
@@ -297,14 +301,14 @@ if __name__ == "__main__":
                             quantity=100,
                         )
                     )
-            elif row['position'] > 0:
+            elif row["position"] > 0:
                 if row["SMA20_close"] < row["SMA100_close"]:
                     self.submit_order(
                         MarketOrder(
                             order_id=uuid.uuid4(),
                             ts_event=row["ts_event"],
                             trade_direction=TradeDirection.SELL,
-                            quantity=abs(row['position']),
+                            quantity=abs(row["position"]),
                         )
                     )
 
